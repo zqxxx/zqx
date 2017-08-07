@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wjq.stu.dao.StudentDao">
+
+	<sql id="selectStudentListWhere">
+		<where>
+	      <if test="stu_name != null" >
+	        stu_name like "%"#{stu_name}"%"
+	      </if>
+	      <if test="stu_sex != null" >
+	        and stu_sex = #{ stu_sex}
+	      </if>
+	      <if test="stu_college != null" >
+	        and stu_college = #{stu_college}
+	      </if>
+	      <if test="stu_grade != null" >
+	        and stu_grade = #{stu_grade}
+	      </if>
+    	</where>
+	</sql>
+	<select id="selectStudentList" parameterType="student" resultType="student">
+		SELECT
+			stu_id,
+			stu_name,
+			b.dict_item_name stu_sex,
+			c.dict_item_name stu_college,
+			d.dict_item_name stu_grade,
+			stu_number,
+			stu_phone
+		FROM
+			student a
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_item_name
+			FROM
+				base_dict
+			WHERE
+				dict_type_code = '002'
+		) b ON a.stu_sex = b.dict_id
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_item_name
+			FROM
+				base_dict
+			WHERE
+				dict_type_code = '001'
+		) c ON a.stu_college = c.dict_id
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_item_name
+			FROM
+				base_dict
+			WHERE
+				dict_type_code = '003'
+		) d ON a.stu_grade = d.dict_id
+		<include refid="selectStudentListWhere"/>
+		<if test="start !=null and rows != null">
+			limit #{start},#{rows}
+		</if>
+	</select>
+	<select id="selectStudentListCount" parameterType="student" resultType="int">
+		select count(*)
+		from student
+		<include refid="selectStudentListWhere"/>
+	</select>	
+	
+	<select id="getStudentById" parameterType="long" resultType="student">
+		select * from student where stu_id = #{id}
+	</select>
+	<update id="updateStudent" parameterType="student">
+		update student
+		<set>
+			<if test="stu_name!=null">
+				stu_name=#{stu_name},
+			</if>
+			<if test="stu_sex!=null">
+				stu_sex=#{stu_sex},
+			</if>
+			<if test="stu_college!=null">
+				stu_college=#{stu_college},
+			</if>
+			<if test="stu_grade!=null">
+				stu_grade=#{stu_grade},
+			</if>
+			<if test="stu_number!=null">
+				stu_number=#{stu_number},
+			</if>
+			<if test="stu_phone!=null">
+				stu_phone=#{stu_phone},
+			</if>
+		</set>
+		where stu_id=#{stu_id}
+	</update>
+	<insert id="insertStudent" parameterType="student">
+		INSERT INTO student(stu_name,stu_number,stu_sex,stu_college,stu_grade,stu_phone) 
+		VALUES(#{stu_name},#{stu_number},#{stu_sex},#{stu_college},#{stu_grade},#{stu_phone})
+	</insert>
+	<delete id="deleteStudent" parameterType="long">
+		delete from student where stu_id=#{id}
+	</delete>
+
+</mapper>
